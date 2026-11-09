@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "minigameplayground-simplyskills",
+  "version": "${version}",
+  "name": "MiniGamePlayground — Simply Skills Compatibility",
+  "description": "Optional compatibility layer that lets MiniGamePlayground zones disable Simply Skills combat, Dodge and Undying behaviour.",
+  "authors": [
+    "MiniGamePlayground"
+  ],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.minigameplayground.simplyskills.MiniGamePlaygroundSimplySkillsMod"
+    ]
+  },
+  "mixins": [
+    "minigameplayground_simplyskills.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "fabric-api": ">=0.92.0",
+    "minecraft": "1.20.1",
+    "java": ">=17",
+    "minigameplayground": ">=2.4.0",
+    "simplyskills": ">=1.7.2",
+    "puffish_skills": ">=0.15.0"
+  }
+}

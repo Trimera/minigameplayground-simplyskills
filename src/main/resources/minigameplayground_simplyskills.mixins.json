@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.minigameplayground.simplyskills.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "minigameplayground_simplyskills.refmap.json",
+  "mixins": [
+    "LivingEntityAddEffectMixin",
+    "ServerPlayerHurtMixin",
+    "LivingEntityIsDeadMixin",
+    "DynamicDamageMixin",
+    "RogueAbilitiesMixin",
+    "AscendancyAbilitiesMixin",
+    "HelperMethodsMixin",
+    "PlayerDamageFallbackMixin",
+    "AttributeRewardMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
