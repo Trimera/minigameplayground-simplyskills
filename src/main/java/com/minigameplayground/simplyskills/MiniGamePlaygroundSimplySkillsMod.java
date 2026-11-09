@@ -1,7 +1,9 @@
 package com.minigameplayground.simplyskills;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.level.ServerPlayer;
 import net.puffish.skillsmod.api.SkillsAPI;
 import net.puffish.skillsmod.reward.builtin.AttributeReward;
@@ -46,6 +48,20 @@ public final class MiniGamePlaygroundSimplySkillsMod implements ModInitializer {
                 if (disabled) {
                     SimplySkillsCompat.stripEffects(player);
                 }
+            }
+        });
+
+        // Force a reward recalculation after respawn/reconnect. Otherwise Puffish's
+        // login/respawn reward application could restore attributes while the player is
+        // already standing in a disabled zone.
+        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
+            if (newPlayer != null) {
+                DISABLED_PLAYERS.remove(newPlayer.getUUID());
+            }
+        });
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+            if (handler.player != null) {
+                DISABLED_PLAYERS.remove(handler.player.getUUID());
             }
         });
 

@@ -1,6 +1,6 @@
 # MiniGamePlayground — Simply Skills Compatibility
 
-可选附属模组，用于在 MiniGamePlayground 区域内关闭 Simply Skills 的战斗防护效果。
+可选附属模组，用于在 MiniGamePlayground 区域内整体禁用 Simply Skills 的技能、效果、属性奖励和死亡防护。
 
 核心模组本身不依赖 Simply Skills。只有同时安装：
 

@@ -3,7 +3,7 @@
   "id": "minigameplayground-simplyskills",
   "version": "${version}",
   "name": "MiniGamePlayground — Simply Skills Compatibility",
-  "description": "Optional compatibility layer that lets MiniGamePlayground zones disable Simply Skills combat, Dodge and Undying behaviour.",
+  "description": "Optional compatibility layer that lets MiniGamePlayground zones fully disable Simply Skills skills, effects, attribute rewards, Dodge and Undying behaviour.",
   "authors": [
     "MiniGamePlayground"
   ],
