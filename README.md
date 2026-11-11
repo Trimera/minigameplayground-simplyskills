@@ -114,7 +114,7 @@ cd ../minigameplayground-simplyskills
 产物：
 
 ```text
-build/libs/minigameplayground-simplyskills-1.1.0.jar
+build/libs/minigameplayground-simplyskills-1.1.1.jar
 ```
 
 构建时需要能访问 Modrinth Maven 下载 Simply Skills 1.7.2 的编译期元数据；运行时不会把 Simply Skills 打包进本附属。

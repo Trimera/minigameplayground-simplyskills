@@ -51,6 +51,17 @@ public abstract class PlayerDamageFallbackMixin {
                 return;
             }
 
+            // A lethal hit is clamped to the victim's remaining health by vanilla.
+            // Scaling that tiny clamped value back up can restore the victim to a
+            // microscopic non-zero health value and create a permanent health lock.
+            // Keep lethal hits lethal; the outer hurt() handles totems and other
+            // death-prevention hooks.
+            if (victim.getHealth() <= 0.0F
+                    || healthLost >= context.healthBefore() - 1.0E-6F) {
+                victim.setHealth(0.0F);
+                return;
+            }
+
             PlaygroundZone victimZone = ZoneManager.getZone(victim);
             if (victimZone == null || victimZone.isDamageDisabled()) {
                 return;
@@ -61,7 +72,8 @@ public abstract class PlayerDamageFallbackMixin {
                 return;
             }
 
-            victim.setHealth(Math.max(0.0F, context.healthBefore() - scaledLoss));
+            float newHealth = Math.max(0.0F, context.healthBefore() - scaledLoss);
+            victim.setHealth(newHealth);
             // Leave death handling to vanilla and other mods so totems/death protection
             // are not bypassed.
         } finally {
