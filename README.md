@@ -4,7 +4,7 @@
 
 核心模组本身不依赖 Simply Skills。只有同时安装：
 
-- `minigameplayground` 2.4.0+
+- `minigameplayground` 2.5.0+
 - `simplyskills` 1.7.2+ / 1.20.1
 - `puffish_skills` 0.15.0+（Simply Skills 的前置）
 - 本附属模组
@@ -39,11 +39,11 @@ Simply Skills 的 `Undying` 效果会在玩家生命降到 0 时把生命设置�
 
 ```text
 /mgp simplyskills <区域ID>
-/mgp simplyskills <区域ID> true
-/mgp simplyskills <区域ID> false
+/mgp simplyskills <区域ID> disabled
+/mgp simplyskills <区域ID> enabled
 ```
 
-`true` 表示在区域内禁用 Simply Skills；`false` 表示保持 Simply Skills 原行为。默认 `false`。
+`disabled` 表示在区域内整体禁用 Simply Skills；`enabled` 表示保持 Simply Skills 原行为。默认 `enabled`。
 
 `/mgp list <区域>` 会显示：
 
@@ -82,12 +82,12 @@ SimplySkills: 禁用 / 启用
 
 核心模组原本有一个专门为 Simply Skills 准备的 `actuallyHurt` 最终生命值兜底。现在该兜底已从核心移除并迁移到本附属：
 
-- 只在玩家位于 `disableSimplySkills=true` 的区域时生效；
 - 使用核心的 `DamageFallbackContext` 判断正常伤害倍率是否已经执行；
 - 如果 Simply Skills 取消了核心的 `getDamageAfterMagicAbsorb` 回调，附属会按最终生命损失重新应用一次伤害平衡；
+- 兜底覆盖所有游戏区域，恢复从核心迁移前的行为；
 - 不再直接调用 `die()`，因此不会绕过不死图腾或其他死亡保护。
 
-未启用 Simply Skills 禁用的区域不会运行这个兜底，Simply Skills 的原行为保持不变。
+进入区域后在玩家 tick 开始时同步移除效果和属性奖励，不等到服务器 tick 结束。
 
 ## 与其他模组的关系
 
@@ -114,7 +114,7 @@ cd ../minigameplayground-simplyskills
 产物：
 
 ```text
-build/libs/minigameplayground-simplyskills-1.0.0.jar
+build/libs/minigameplayground-simplyskills-1.1.0.jar
 ```
 
 构建时需要能访问 Modrinth Maven 下载 Simply Skills 1.7.2 的编译期元数据；运行时不会把 Simply Skills 打包进本附属。

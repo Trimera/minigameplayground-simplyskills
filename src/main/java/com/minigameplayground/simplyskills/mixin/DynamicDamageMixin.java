@@ -25,7 +25,10 @@ public abstract class DynamicDamageMixin {
                                                       float lastDamageTime,
                                                       CallbackInfoReturnable<Float> cir) {
         if (victim instanceof ServerPlayer player && SimplySkillsCompat.isDisabled(player)) {
-            cir.setReturnValue(amount);
+            // Keep the value the core mod already applied if this callback runs after it.
+            // Returning the pre-magic amount here would overwrite the balanced value and
+            // make consecutive hits use inconsistent damage.
+            cir.setReturnValue(currentDamage);
         }
     }
 }

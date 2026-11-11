@@ -7,16 +7,55 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.puffish.skillsmod.api.SkillsAPI;
+import net.puffish.skillsmod.reward.builtin.AttributeReward;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Shared checks for the Simply Skills compatibility addon.
  */
 public final class SimplySkillsCompat {
     private static final String SIMPLY_SKILLS_NAMESPACE = "simplyskills";
+    private static final Set<UUID> DISABLED_PLAYERS = new HashSet<>();
 
     private SimplySkillsCompat() {
+    }
+
+    /**
+     * Called at the start of the player tick, before movement and before any damage.
+     * Entering a disabled zone therefore removes effects and attribute rewards in the
+     * same tick instead of waiting for the end-of-server-tick cleanup.
+     */
+    public static void tick(ServerPlayer player) {
+        if (player == null) {
+            return;
+        }
+        boolean disabled = isDisabled(player);
+        UUID playerId = player.getUUID();
+        boolean wasDisabled = DISABLED_PLAYERS.contains(playerId);
+        if (disabled != wasDisabled) {
+            if (disabled) {
+                DISABLED_PLAYERS.add(playerId);
+            } else {
+                DISABLED_PLAYERS.remove(playerId);
+            }
+            // Re-evaluate Puffish attribute rewards synchronously. Entering removes
+            // them; leaving lets the normal calculation add them back.
+            SkillsAPI.updateRewards(player, AttributeReward.class);
+        }
+        if (disabled) {
+            stripEffects(player);
+        }
+    }
+
+    public static void forget(UUID playerId) {
+        if (playerId != null) {
+            DISABLED_PLAYERS.remove(playerId);
+        }
     }
 
     /**

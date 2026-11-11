@@ -2,7 +2,6 @@ package com.minigameplayground.simplyskills.mixin;
 
 import com.minigameplayground.damage.DamageFallbackContext;
 import com.minigameplayground.damage.DamageProcessor;
-import com.minigameplayground.simplyskills.SimplySkillsCompat;
 import com.minigameplayground.zone.PlaygroundZone;
 import com.minigameplayground.zone.ZoneManager;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,8 +15,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Restores MiniGamePlayground's damage balance when Simply Skills cancels the normal
  * {@code getDamageAfterMagicAbsorb} return callback. This fallback used to live in the
- * core mod specifically for Simply Skills; it now only applies inside zones where
- * Simply Skills is disabled, so zones that keep Simply Skills active retain its behavior.
+ * core mod; it was moved here together with the Simply Skills compatibility layer and
+ * keeps the same all-zones behaviour as before.
  */
 @Mixin(Player.class)
 public abstract class PlayerDamageFallbackMixin {
@@ -43,8 +42,7 @@ public abstract class PlayerDamageFallbackMixin {
 
         try {
             if (context.magicApplied()
-                    || DamageProcessor.isUnstoppable(source)
-                    || !SimplySkillsCompat.isDisabled(victim)) {
+                    || DamageProcessor.isUnstoppable(source)) {
                 return;
             }
 
