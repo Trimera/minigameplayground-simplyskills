@@ -4,7 +4,7 @@
 
 核心模组本身不依赖 Simply Skills。只有同时安装：
 
-- `minigameplayground` 2.5.1+
+- `minigameplayground` 2.5.2+
 - `simplyskills` 1.7.2+ / 1.20.1
 - `puffish_skills` 0.15.0+（Simply Skills 的前置）
 - 本附属模组
@@ -124,7 +124,7 @@ cd ../minigameplayground-simplyskills
 产物：
 
 ```text
-build/libs/minigameplayground-simplyskills-1.1.4.jar
+build/libs/minigameplayground-simplyskills-1.1.5.jar
 ```
 
 构建时需要能访问 Modrinth Maven 下载 Simply Skills 1.7.2 的编译期元数据；运行时不会把 Simply Skills 打包进本附属。扣血前缩放使用 MixinExtras 的 `@WrapOperation`，运行时的 MixinExtras 由 Fabric Loader 提供。
