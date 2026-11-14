@@ -87,7 +87,8 @@ SimplySkills: 禁用 / 启用
 - `DamageFallbackContext.magicApplied` 用于避免核心入口和附属包装重复缩放；
 - 原有 `actuallyHurt` RETURN 兜底保留，作为包装未命中时的最后保险；
 - 兜底覆盖所有游戏区域，恢复从核心迁移前的行为；
-- 不再直接调用 `die()`，因此不会绕过不死图腾或其他死亡保护。
+- 不再直接调用 `die()`，因此不会绕过不死图腾或其他死亡保护；
+- 同一发弹体的第一段已经致命时，2 tick 内忽略同一弹体的后续分段伤害，避免玩家重生瞬间再掉一次血。
 
 ### 为什么需要扣血前缩放
 
@@ -122,7 +123,7 @@ cd ../minigameplayground-simplyskills
 产物：
 
 ```text
-build/libs/minigameplayground-simplyskills-1.1.2.jar
+build/libs/minigameplayground-simplyskills-1.1.3.jar
 ```
 
 构建时需要能访问 Modrinth Maven 下载 Simply Skills 1.7.2 的编译期元数据；运行时不会把 Simply Skills 打包进本附属。扣血前缩放使用 MixinExtras 的 `@WrapOperation`，运行时的 MixinExtras 由 Fabric Loader 提供。

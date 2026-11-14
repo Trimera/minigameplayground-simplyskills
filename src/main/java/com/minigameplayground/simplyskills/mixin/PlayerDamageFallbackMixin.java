@@ -8,11 +8,16 @@ import com.minigameplayground.zone.PlaygroundZone;
 import com.minigameplayground.zone.ZoneManager;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Restores MiniGamePlayground's damage balance when Simply Skills cancels the normal
@@ -22,6 +27,50 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(Player.class)
 public abstract class PlayerDamageFallbackMixin {
+    /**
+     * TACZ applies one bullet as two separate hurt calls. If the first call kills
+     * the victim and the server respawns immediately, the second call can land on
+     * the freshly respawned player. Remember the direct entity that delivered the
+     * lethal part for a couple of ticks so the follow-up part can be ignored.
+     */
+    private static final Map<UUID, LethalShot> LETHAL_SHOTS = new ConcurrentHashMap<>();
+    private static final long LETHAL_SHOT_WINDOW_TICKS = 2L;
+
+    private record LethalShot(int directEntityId, long gameTime) {
+    }
+
+    private static boolean isLethalFollowUp(ServerPlayer victim, DamageSource source) {
+        Entity directEntity = source.getDirectEntity();
+        if (directEntity == null) {
+            return false;
+        }
+        UUID uuid = victim.getUUID();
+        LethalShot marker = LETHAL_SHOTS.get(uuid);
+        if (marker == null) {
+            return false;
+        }
+        long now = victim.level().getGameTime();
+        if (marker.directEntityId() != directEntity.getId()
+                || now - marker.gameTime() > LETHAL_SHOT_WINDOW_TICKS) {
+            LETHAL_SHOTS.remove(uuid);
+            return false;
+        }
+        return true;
+    }
+
+    private static void rememberLethalShot(ServerPlayer victim, DamageSource source) {
+        Entity directEntity = source.getDirectEntity();
+        // Only track indirect damage (bullets, arrows, thrown projectiles). A melee
+        // attacker is also the direct entity, and a legitimate fast follow-up melee
+        // hit should not be swallowed.
+        if (directEntity != null
+                && directEntity != source.getEntity()
+                && victim.getHealth() <= 0.0F) {
+            LETHAL_SHOTS.put(victim.getUUID(),
+                    new LethalShot(directEntity.getId(), victim.level().getGameTime()));
+        }
+    }
+
     @Inject(method = "actuallyHurt", at = @At("HEAD"))
     private void minigameplayground$beginDamageFallback(DamageSource source, float amount,
                                                         CallbackInfo ci) {
@@ -49,11 +98,17 @@ public abstract class PlayerDamageFallbackMixin {
                                                        DamageSource source,
                                                        float amount,
                                                        Operation<Float> original) {
-        float result = original.call(entity, source, amount);
         if (!(entity instanceof ServerPlayer victim)) {
-            return result;
+            return original.call(entity, source, amount);
         }
 
+        if (isLethalFollowUp(victim, source)) {
+            // The first part of this bullet already killed the victim. Do not let the
+            // second part damage the respawned player.
+            return 0.0F;
+        }
+
+        float result = original.call(entity, source, amount);
         DamageFallbackContext context = DamageFallbackContext.current();
         if (context != null && context.matches(victim, source) && context.magicApplied()) {
             return result;
@@ -120,6 +175,7 @@ public abstract class PlayerDamageFallbackMixin {
             // Leave death handling to vanilla and other mods so totems/death protection
             // are not bypassed.
         } finally {
+            rememberLethalShot(victim, source);
             DamageFallbackContext.clear(context);
         }
     }
