@@ -1,5 +1,7 @@
 package com.minigameplayground.simplyskills.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.minigameplayground.damage.DamageFallbackContext;
 import com.minigameplayground.damage.DamageProcessor;
 import com.minigameplayground.zone.PlaygroundZone;
@@ -26,6 +28,47 @@ public abstract class PlayerDamageFallbackMixin {
         if ((Object) this instanceof ServerPlayer victim) {
             DamageFallbackContext.begin(victim, source, victim.getHealth());
         }
+    }
+
+    /**
+     * Wraps the vanilla magic-absorb call itself instead of relying on a RETURN
+     * injection. Other mods that call {@code CallbackInfoReturnable.setReturnValue}
+     * during that method cancel all later RETURN callbacks, which used to make the
+     * core scaling disappear for TACZ bullets. Wrapping the call still sees the final
+     * returned value, so scaling can be applied before vanilla subtracts health.
+     */
+    @WrapOperation(
+            method = "actuallyHurt",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/entity/player/Player;getDamageAfterMagicAbsorb"
+                            + "(Lnet/minecraft/world/damagesource/DamageSource;F)F"
+            )
+    )
+    private float minigameplayground$scaleBeforeHealth(Player entity,
+                                                       DamageSource source,
+                                                       float amount,
+                                                       Operation<Float> original) {
+        float result = original.call(entity, source, amount);
+        if (!(entity instanceof ServerPlayer victim)) {
+            return result;
+        }
+
+        DamageFallbackContext context = DamageFallbackContext.current();
+        if (context != null && context.matches(victim, source) && context.magicApplied()) {
+            return result;
+        }
+
+        float scaled = DamageProcessor.processDamage(victim, source, result);
+        if (!Float.isFinite(scaled)) {
+            return result;
+        }
+
+        if (context != null && context.matches(victim, source)) {
+            // Tell the RETURN fallback that the balance has already been applied.
+            DamageFallbackContext.markMagicApplied(victim, source);
+        }
+        return scaled;
     }
 
     @Inject(method = "actuallyHurt", at = @At("RETURN"))

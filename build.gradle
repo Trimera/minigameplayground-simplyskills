@@ -31,6 +31,10 @@ dependencies {
 	// annotation processor at build time.
 	modCompileOnly "maven.modrinth:simply-skills:1.7.2+1.20.1"
 	modCompileOnly "maven.modrinth:skills:0.15.4"
+
+	// Provided at runtime by Fabric Loader; used to wrap the magic-absorb call so
+	// another mod cannot cancel our damage scaling by setting a RETURN value.
+	compileOnly "io.github.llamalad7:mixinextras-fabric:0.5.0"
 }
 
 processResources {

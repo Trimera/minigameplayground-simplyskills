@@ -80,12 +80,20 @@ SimplySkills: 禁用 / 启用
 
 ## 伤害兜底已迁移到本附属
 
-核心模组原本有一个专门为 Simply Skills 准备的 `actuallyHurt` 最终生命值兜底。现在该兜底已从核心移除并迁移到本附属：
+核心模组原本有一个专门为 Simply Skills 准备的 `actuallyHurt` 最终生命值兜底。现在该兜底已从核心移除并迁移到本附属，并增加了一层扣血前的缩放：
 
-- 使用核心的 `DamageFallbackContext` 判断正常伤害倍率是否已经执行；
-- 如果 Simply Skills 取消了核心的 `getDamageAfterMagicAbsorb` 回调，附属会按最终生命损失重新应用一次伤害平衡；
+- 使用 `@WrapOperation` 包住 `Player.actuallyHurt` 内的 `getDamageAfterMagicAbsorb` 调用；
+- 即使其他模组在 `getDamageAfterMagicAbsorb` 的 RETURN 阶段调用 `setReturnValue` 取消了核心回调，附属仍能拿到最终返回值，并在扣血前应用区域倍率；
+- `DamageFallbackContext.magicApplied` 用于避免核心入口和附属包装重复缩放；
+- 原有 `actuallyHurt` RETURN 兜底保留，作为包装未命中时的最后保险；
 - 兜底覆盖所有游戏区域，恢复从核心迁移前的行为；
 - 不再直接调用 `die()`，因此不会绕过不死图腾或其他死亡保护。
+
+### 为什么需要扣血前缩放
+
+TACZ 的子弹会把一发伤害拆成 `tacz:bullet` 和 `tacz:bullet_ignore_armor` 两次 `hurt`。部分模组会取消核心的 RETURN 回调，导致旧兜底只能在扣完血后修改生命值。非致命命中可以救回来，但一旦原始伤害已经大于当前生命，玩家会先死亡，兜底无法修正。表现就是：平时一枪只掉 2 点，低血量时却被原始伤害一枪秒杀。
+
+扣血前缩放后，TACZ 的 7.2 点原始伤害会先变成 1.6 点，再交给原版扣血，不会再出现这个低血量边界。
 
 进入区域后在玩家 tick 开始时同步移除效果和属性奖励，不等到服务器 tick 结束。
 
@@ -114,10 +122,10 @@ cd ../minigameplayground-simplyskills
 产物：
 
 ```text
-build/libs/minigameplayground-simplyskills-1.1.1.jar
+build/libs/minigameplayground-simplyskills-1.1.2.jar
 ```
 
-构建时需要能访问 Modrinth Maven 下载 Simply Skills 1.7.2 的编译期元数据；运行时不会把 Simply Skills 打包进本附属。
+构建时需要能访问 Modrinth Maven 下载 Simply Skills 1.7.2 的编译期元数据；运行时不会把 Simply Skills 打包进本附属。扣血前缩放使用 MixinExtras 的 `@WrapOperation`，运行时的 MixinExtras 由 Fabric Loader 提供。
 
 ## License
 
