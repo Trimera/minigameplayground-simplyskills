@@ -49,6 +49,24 @@ public final class SimplySkillsCompat {
         }
         if (disabled) {
             stripEffects(player);
+            clampHealth(player);
+        }
+    }
+
+    /**
+     * Simply Skills' skill tree can grant max-health attributes. When those rewards are
+     * removed on entering a disabled zone, vanilla does not automatically shrink the
+     * current health, leaving the player above their new maximum. Clamp it every tick
+     * while the zone is disabled so the health bar and damage calculations stay valid.
+     */
+    public static void clampHealth(ServerPlayer player) {
+        if (player == null) {
+            return;
+        }
+        float maxHealth = player.getMaxHealth();
+        if (Float.isFinite(maxHealth) && maxHealth > 0.0F
+                && player.getHealth() > maxHealth) {
+            player.setHealth(maxHealth);
         }
     }
 

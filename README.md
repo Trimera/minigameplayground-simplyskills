@@ -4,7 +4,7 @@
 
 核心模组本身不依赖 Simply Skills。只有同时安装：
 
-- `minigameplayground` 2.5.0+
+- `minigameplayground` 2.5.1+
 - `simplyskills` 1.7.2+ / 1.20.1
 - `puffish_skills` 0.15.0+（Simply Skills 的前置）
 - 本附属模组
@@ -63,7 +63,8 @@ SimplySkills: 禁用 / 启用
 6. 关闭 `Dynamic Damage Reduction`；
 7. 关闭 Rogue `Evasion Mastery` 的完全闪避；
 8. 关闭 Ascendancy `Torment` 的伤害取消；
-9. 移除 Puffish Skills 的属性奖励（例如技能树提供的攻击、生命、速度等），离开区域后重新计算并恢复。
+9. 移除 Puffish Skills 的属性奖励（例如技能树提供的攻击、生命、速度等），离开区域后重新计算并恢复；
+10. 属性奖励移除后如果当前生命高于新的生命上限，立即将生命缩紧到上限。
 
 区域外不改变 Simply Skills 的任何行为。
 
@@ -123,7 +124,7 @@ cd ../minigameplayground-simplyskills
 产物：
 
 ```text
-build/libs/minigameplayground-simplyskills-1.1.3.jar
+build/libs/minigameplayground-simplyskills-1.1.4.jar
 ```
 
 构建时需要能访问 Modrinth Maven 下载 Simply Skills 1.7.2 的编译期元数据；运行时不会把 Simply Skills 打包进本附属。扣血前缩放使用 MixinExtras 的 `@WrapOperation`，运行时的 MixinExtras 由 Fabric Loader 提供。
